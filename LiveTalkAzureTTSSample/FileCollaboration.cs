@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LiveTalkAzureTTSSample
+namespace LiveTalk
 {
     internal class FileCollaboration
     {
