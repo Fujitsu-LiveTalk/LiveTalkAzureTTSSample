@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019 FUJITSU SOCIAL SCIENCE LABORATORY LIMITED
+ * Copyright 2021 FUJITSU LIMITED
  * クラス名　：TextToSpeechModel
  * 概要      ：Azure Cognitive Services Speech Servicesと連携
 */
@@ -10,19 +10,26 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LiveTalkAzureTTSSample.Models
 {
     internal class TextToSpeechModel
     {
-        private string APIKey = "<<<<YOUR_SUBSCRIPTION_KEY>>>>";
-        private string TokenUrl = "https://eastasia.api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        private string Url = "https://eastasia.tts.speech.microsoft.com/cognitiveservices/v1";
+        private string TokenUrl = "https://{0}.api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        private string Url = "https://{0}.tts.speech.microsoft.com/cognitiveservices/v1";
         private string ProxyServer = "";    // PROXY経由なら proxy.hogehoge.jp:8080 のように指定
         private string ProxyId = "";        // 認証PROXYならIDを指定
         private string ProxyPassword = "";  // 認証PROXYならパスワードを指定
         private string AccessToken = string.Empty;
+        private System.Timers.Timer ExpireTimer;
+
+        public TextToSpeechModel()
+        {
+            this.TokenUrl = string.Format(this.TokenUrl, Common.Config.Location);
+            this.Url = string.Format(this.Url, Common.Config.Location);
+        }
 
         /// <summary>
         /// アクセストークンを取得する
@@ -31,17 +38,19 @@ namespace LiveTalkAzureTTSSample.Models
         public async Task GetToken()
         {
             this.AccessToken = await FetchTokenAsync().ConfigureAwait(false);
-            Console.WriteLine("Successfully obtained an access token. \n");
         }
 
         public async Task<(byte[], string)> TextToSpeechAsync(string text)
         {
             try
             {
+                // よみかた辞書
+                text = text.Replace("&nbsp;", " ").Replace("障がい者", "しょうがいしゃ").Replace("障がい", "しょうがい");
+
                 // パラメタ設定
                 var body =
-                    @"<speak version='1.0' xmlns='https://www.w3.org/2001/10/synthesis' xml:lang='en-US'>" +
-                    @"<voice name='Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)'>" +
+                    @"<speak version='1.0' xmlns='https://www.w3.org/2001/10/synthesis' xml:lang='ja-JP'>" +
+                    @"<voice name='ja-JP-KeitaNeural'>" +
                     text +
                     "</voice></speak>";
 
@@ -83,6 +92,8 @@ namespace LiveTalkAzureTTSSample.Models
                             }
                             else
                             {
+                                this.ExpireTimer.Stop();
+                                this.AccessToken = await FetchTokenAsync().ConfigureAwait(false);
                                 return (null, response.StatusCode.ToString());
                             }
                         }
@@ -91,6 +102,8 @@ namespace LiveTalkAzureTTSSample.Models
             }
             catch (Exception ex)
             {
+                this.ExpireTimer.Stop();
+                this.AccessToken = await FetchTokenAsync().ConfigureAwait(false);
                 return (null, ex.Message);
             }
         }
@@ -117,15 +130,59 @@ namespace LiveTalkAzureTTSSample.Models
                 ch.Proxy = null;
             }
 
+            //　タイマー
+            if (this.ExpireTimer == null)
+            {
+                this.ExpireTimer = new System.Timers.Timer();
+                this.ExpireTimer.Interval = (3 * 60 + 30) * 1000;
+                this.ExpireTimer.Elapsed += ExpireTimer_Tick;
+            }
+            this.ExpireTimer.Start();
+
             // 認証呼び出し
             using (var client = new HttpClient(ch))
             {
-                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", this.APIKey);
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", Common.Config.APIKey);
                 UriBuilder uriBuilder = new UriBuilder(this.TokenUrl);
 
                 var result = await client.PostAsync(uriBuilder.Uri.AbsoluteUri, null).ConfigureAwait(false);
-                return await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var accessToken = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+                if (accessToken.IndexOf("{", StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    Console.WriteLine("Successfully obtained an access token.\n");
+                }
+                else
+                {
+                    Console.WriteLine($"{ new String('-', 20)}\nUnSuccessfully obtained an access token.\n");
+
+                    // デシリアライズ
+                    var json = JsonSerializer.Deserialize<TReslutAccessToken>(accessToken);
+                    Console.WriteLine($"{json?.error?.message}");
+                    Console.WriteLine($"{ new String('-', 20)} \n");
+                    accessToken = string.Empty;
+                }
+                return accessToken;
             }
         }
+
+        private async void ExpireTimer_Tick(object sender, object e)
+        {
+            this.ExpireTimer.Stop();
+            this.AccessToken = await FetchTokenAsync().ConfigureAwait(false);
+        }
+
+
+        private class TReslutAccessToken
+        {
+            public TError error { get; set; }
+        }
+
+        private class TError
+        {
+            public string code { get; set; }
+            public string message { get; set; }
+        }
+
+
     }
 }

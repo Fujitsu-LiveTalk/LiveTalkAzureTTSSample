@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019 FUJITSU SOCIAL SCIENCE LABORATORY LIMITED
+ * Copyright 2021 FUJITSU LIMITED
  * クラス名　：FileCollaboration
  * 概要      ：LiveTalkの常時ファイル入力/常時ファイル出力と連携
 */

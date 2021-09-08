@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019 FUJITSU SOCIAL SCIENCE LABORATORY LIMITED
+ * Copyright 2021 FUJITSU LIMITED
  * システム名：LiveTalkAzureTTSSample
  * 概要      ：LiveTalk-Speech Services連携サンプルアプリ
 */
@@ -72,21 +72,27 @@ namespace LiveTalkAzureTTSSample
                     // 音声合成の再生
                     if (AudioQueue.TryTake(out byte[] data, -1, TokenSource.Token))
                     {
-                        using (var ms = new MemoryStream(data))
+                        try
                         {
-                            using (var audio = new WaveFileReader(ms))
+                            using (var ms = new MemoryStream(data))
                             {
-                                using (var outputDevice = new WaveOutEvent())
+                                using (var audio = new WaveFileReader(ms))
                                 {
-                                    outputDevice.Init(audio);
-                                    outputDevice.Play();
-                                    while (outputDevice.PlaybackState == PlaybackState.Playing)
+                                    using (var outputDevice = new WaveOutEvent())
                                     {
-                                        Thread.Sleep(1000);
+                                        outputDevice.Init(audio);
+                                        outputDevice.Play();
+
+                                        // 再生終了待ち
+                                        while (outputDevice.PlaybackState == PlaybackState.Playing)
+                                        {
+                                            Thread.Sleep(1000);
+                                        }
                                     }
                                 }
                             }
                         }
+                        catch { }
                     }
                 }
             });
