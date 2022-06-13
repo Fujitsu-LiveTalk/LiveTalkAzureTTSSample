@@ -1,6 +1,6 @@
 # LiveTalkAzureTTSSample
 LiveTalk常時ファイル出力で出力したテキストを、Microsoft Azure Cognitive Services Speech ServicesのText To Speech を使って音声合成出力するサンプルです。  
-本サンプルコードは、.NET Core 3.0で作成しています。コードレベルでは.NET Framework 4.6と互換性があります。
+本サンプルコードは、.NET 6.0で作成しています。コードレベルでは.NET Framework 4.6と互換性があります。
 
 ![Process](https://github.com/FujitsuSSL-LiveTalk/LiveTalkAzureTTSSample/blob/images/README.png)
 

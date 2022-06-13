@@ -45,7 +45,7 @@ namespace LiveTalkAzureTTSSample
                 Console.WriteLine("Speech contents:" + items[2]);
                 Console.WriteLine("Translate content:" + items[3]);
 
-                (byte[] waveData, string errorMessage) = await model.TextToSpeechAsync(items[3] == "\"\"" ? items[2] : items[3]);
+                (byte[] waveData, string errorMessage) = await model.TextToSpeechAsync(items[3] == "\"\"" ? items[2] : items[3], items[1]);
                 if (waveData != null)
                 {
                     // 音声合成キューにエントリ

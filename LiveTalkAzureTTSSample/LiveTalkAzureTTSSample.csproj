@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>FUJITSU  LIMITED</Authors>
     <Copyright>COPYRIGHT(C) 2021 FUJITSU LIMITED</Copyright>
     <PackageProjectUrl>https://www.fujitsu.com/jp/group/ssl/products/livetalk/</PackageProjectUrl>

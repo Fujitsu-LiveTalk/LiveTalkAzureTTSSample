@@ -40,7 +40,7 @@ namespace LiveTalkAzureTTSSample.Models
             this.AccessToken = await FetchTokenAsync().ConfigureAwait(false);
         }
 
-        public async Task<(byte[], string)> TextToSpeechAsync(string text)
+        public async Task<(byte[], string)> TextToSpeechAsync(string text, string speeker)
         {
             try
             {
@@ -48,9 +48,10 @@ namespace LiveTalkAzureTTSSample.Models
                 text = text.Replace("&nbsp;", " ").Replace("障がい者", "しょうがいしゃ").Replace("障がい", "しょうがい");
 
                 // パラメタ設定
+                var voiceName = speeker.IndexOf("皆川") < 0 ? "ja-JP-KeitaNeural" : "ja-JP-NanamiNeural";
                 var body =
                     @"<speak version='1.0' xmlns='https://www.w3.org/2001/10/synthesis' xml:lang='ja-JP'>" +
-                    @"<voice name='ja-JP-KeitaNeural'>" +
+                    @$"<voice name='{voiceName}'>" +
                     text +
                     "</voice></speak>";
 
