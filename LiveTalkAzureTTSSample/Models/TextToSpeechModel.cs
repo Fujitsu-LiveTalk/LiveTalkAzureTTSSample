@@ -53,7 +53,7 @@ namespace LiveTalkAzureTTSSample.Models
                 var body =
                     @"<speak version='1.0' xmlns='https://www.w3.org/2001/10/synthesis' xml:lang='ja-JP'>" +
                     @$"<voice name='{voiceName}'>" +
-                    text +
+                    System.Security.SecurityElement.Escape(text) +
                     "</voice></speak>";
 
                 // プロキシ設定
