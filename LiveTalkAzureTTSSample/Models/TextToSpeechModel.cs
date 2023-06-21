@@ -3,6 +3,7 @@
  * クラス名　：TextToSpeechModel
  * 概要      ：Azure Cognitive Services Speech Servicesと連携
 */
+using LiveTalkAzureTTSSample.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,9 +20,9 @@ namespace LiveTalkAzureTTSSample.Models
     {
         private string TokenUrl = "https://{0}.api.cognitive.microsoft.com/sts/v1.0/issueToken";
         private string Url = "https://{0}.tts.speech.microsoft.com/cognitiveservices/v1";
-        private string ProxyServer = "";    // PROXY経由なら proxy.hogehoge.jp:8080 のように指定
-        private string ProxyId = "";        // 認証PROXYならIDを指定
-        private string ProxyPassword = "";  // 認証PROXYならパスワードを指定
+        private string ProxyServer = Config.UseProxy ? Config.ProxyServerName : "";     // PROXY経由なら proxy.hogehoge.jp:8080 のように指定
+        private string ProxyId = Config.ProxyServerId;                                  // 認証PROXYならIDを指定
+        private string ProxyPassword = Config.ProxyServerPassword;                      // 認証PROXYならパスワードを指定
         private string AccessToken = string.Empty;
         private System.Timers.Timer ExpireTimer;
 
@@ -48,7 +49,7 @@ namespace LiveTalkAzureTTSSample.Models
                 text = text.Replace("&nbsp;", " ").Replace("障がい者", "しょうがいしゃ").Replace("障がい", "しょうがい");
 
                 // パラメタ設定
-                var voiceName = speeker.IndexOf("皆川") < 0 ? "ja-JP-KeitaNeural" : "ja-JP-NanamiNeural";
+                var voiceName = "ja-JP-KeitaNeural";
                 var body =
                     @"<speak version='1.0' xmlns='https://www.w3.org/2001/10/synthesis' xml:lang='ja-JP'>" +
                     @$"<voice name='{voiceName}'>" +

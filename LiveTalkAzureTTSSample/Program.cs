@@ -3,6 +3,7 @@
  * システム名：LiveTalkAzureTTSSample
  * 概要      ：LiveTalk-Speech Services連携サンプルアプリ
 */
+using LiveTalkAzureTTSSample.Common;
 using NAudio.Wave;
 using System;
 using System.Collections.Concurrent;
@@ -21,6 +22,8 @@ namespace LiveTalkAzureTTSSample
 
         static void Main(string[] args)
         {
+            Config.Load();
+
             var model = new Models.TextToSpeechModel();
             var param = new string[]
             {
